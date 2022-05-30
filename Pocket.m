@@ -44,14 +44,14 @@ methods(Access = public)
 
     end
 
-    function TF = CheckPocket(this, location, radius)
+    function TF = CheckPocket(this, location)
 
         TF = false;
-        margin = 20;
+        margin = 0;
 
         if (norm(this.Origin - location) <= this.Radius + margin)
 
-            TF = true
+            TF = true;
 
         end
 
