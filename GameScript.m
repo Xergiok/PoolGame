@@ -22,6 +22,12 @@ Input = Controller(f);
 
 pool_table = Borders(f);
 
+pocket_pos = [150 70; 0 70; -150 70; -150 -70; 0 -70; 150 -70]
+
+for i = 1:size(pocket_pos, 1)
+    Pockets(i) = Pocket(f, pocket_pos(i, :));
+end
+
 max_time = zeros(1, 100);
 
 PhysParams(1, 2) = Ball_Phys;
@@ -55,8 +61,24 @@ while State.bRunning
     tic;    % start timer
     interaction = zeros(Num);   % ball interaction matrix
 
-    for i = 1:Num
-        Ball_Array(i).UpdateObject(time_step, pool_table, Ball_Array(Ball_Array ~= Ball_Array(i)));
+    if any(isvalid(Ball_Array))
+
+        for i = 1:Num
+            Ball_Array(i).UpdateObject(time_step, pool_table, Ball_Array(Ball_Array ~= Ball_Array(i)));
+
+            for j = 1:6
+                potted = Pockets(j).CheckPocket(Ball_Array(i).Location.Coord);
+                if potted
+                    if Controlled == Ball_Array(i)
+                        Controlled = [];
+                    end
+                    delete(Ball_Array(i));
+                    Ball_Array(i) = [];
+                    Num = Num - 1;
+                    break;
+                end
+            end
+        end
     end
 
     drawnow;
@@ -94,15 +116,20 @@ end
 
     function TF = IsAnyMoving()
 
-        i = 0;
+        TF = false;
 
-        for i = 1:Num
-            moves(i) = Ball_Array(i).bMoving;
+        if any(isvalid(Ball_Array))
+
+            i = 0;
+            for i = 1:Num
+                moves(i) = Ball_Array(i).bMoving;
+            end
+
+            clear i;
+
+            TF = any(moves);
         end
 
-        clear i;
-
-        TF = any(moves);
     end
 
     function TF = IsAnyControlled()

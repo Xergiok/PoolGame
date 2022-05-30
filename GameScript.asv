@@ -1,6 +1,6 @@
 function GameScript
 
-% close all;
+close all;
 clear all; 
 clear class;
 clc;
@@ -9,6 +9,7 @@ clc;
 
 f = figure(1);
 
+% figure properties
 set(f, 'MenuBar', 'none', 'ToolBar', 'none');
 axis equal
 set(gca, "Xtick", [], "Ytick", []);
@@ -20,6 +21,12 @@ State = GameState();
 Input = Controller(f);
 
 pool_table = Borders(f);
+
+pocket_pos = [150 70; 0 70; -150 70; -150 -70; 0 -70; 150 -70]
+
+for i = 1:size(pocket_pos, 1)
+    Pockets(i) = Pocket(f, pocket_pos(i, :));
+end
 
 max_time = zeros(1, 100);
 
@@ -40,7 +47,7 @@ Controlled = [];
 bFixedControl = false;
 AuxiliaryLine = gobjects(2, 1);
 
-
+% setting figure callbacks
 set(f, 'WindowButtonDownFcn', @OnMouseDown)
 set(f, 'WindowButtonUpFcn', @OnMouseUp)
 set(f, 'WindowButtonMotionFcn', @OnMouseMove);
@@ -54,9 +61,24 @@ while State.bRunning
     tic;    % start timer
     interaction = zeros(Num);   % ball interaction matrix
 
-    for i = 1:Num
-        Ball_Array(i).UpdateObject(time_step, pool_table);
-%         vel = Ball_Array(i).Velocity.Length
+    if any(isvalid(Ball_Array))
+
+        for i = 1:Num
+            Ball_Array(i).UpdateObject(time_step, pool_table, Ball_Array(Ball_Array ~= Ball_Array(i)));
+
+            for j = 1:6
+                potted = Pockets(j).CheckPocket(Ball_Array(i).Location.Coord);
+                if potted
+                    if Controlled == Ball_Array(i)
+                        Controlled = [];
+                    end
+                    delete(Ball_Array(i));
+                    Ball_Array(i) = [];
+                    Num = Num - 1;
+                    break;
+                end
+            end
+        end
     end
 
     drawnow;
@@ -94,10 +116,13 @@ end
 
     function TF = IsAnyMoving()
 
-        i = 0;
+        if any(isvalid(Ball_Array))
 
-        for i = 1:Num
-            moves(i) = Ball_Array(i).bMoving;
+            i = 0;
+            for i = 1:Num
+                moves(i) = Ball_Array(i).bMoving;
+            end
+            
         end
 
         clear i;
@@ -134,8 +159,15 @@ end
             else
                 point = pos - Controlled.Location;
                 Controlled.AddVelocity(point*10);
-                if ~bFixedControl
-                Controlled = [];
+
+                if ishghandle(AuxiliaryLine)
+                    set(AuxiliaryLine(1, 1), "Color", 'r', "LineStyle", ':');
+                    set(AuxiliaryLine(2, 1), "EdgeColor", 'r');
+                end
+
+                if ~bFixedControl   % not fixed controlled ball
+                    Controlled = [];
+                end
             end
         end
 
@@ -149,11 +181,17 @@ end
                 pos = GetMousePosition();
                 locate =  Controlled.Location.Coord;
                 if ishghandle(AuxiliaryLine)
-                    set(AuxiliaryLine(1, 1), "XData", [pos(1) locate(1)], "YData", [pos(2) locate(2)], "Color", 'b', "LineStyle", '-.');
-                    set(AuxiliaryLine(2, 1), "XData", pos(1), "YData", pos(2), "MarkerEdgeColor", 'b');
+                    set(AuxiliaryLine(1, 1), "XData", [pos(1) locate(1)], ...
+                        "YData", [pos(2) locate(2)], "Color", 'b', "LineStyle", '-.');
+                    vertx = Controlled.Vertexes + pos';
+                    set(AuxiliaryLine(2, 1), "XData", vertx(1, :), "YData", vertx(2, :), 'EdgeColor', 'b');
                 else
                     AuxiliaryLine(1, 1) = plot([pos(1) locate(1)], [pos(2) locate(2)], '-.b');
-                    AuxiliaryLine(2, 1) = scatter(pos(1), pos(2), 'ob');
+                    vertx = Controlled.Vertexes + pos';
+                    AuxiliaryLine(2, 1) = patch("XData", vertx(1, :), "YData", vertx(2, :), ...
+                        'EdgeColor', 'b', 'FaceColor','none','LineWidth', 1);
+                    
+
                 end
 
             end
@@ -164,10 +202,7 @@ end
     function OnMouseUp(~, ~)
 
         if IsAnyControlled
-            if ishghandle(AuxiliaryLine)
-                set(AuxiliaryLine(1, 1), "Color", 'r', "LineStyle", ':');
-                set(AuxiliaryLine(2, 1), "MarkerEdgeColor", 'r');
-            end
+            
         end
 
     end
@@ -194,7 +229,7 @@ end
 
             mr = Ball_Array(i).Radius + margin;
 
-            if all(point >= (Ball_Array(i).Location - mr)) && all(point <= (Ball_Array(i).Location + mr))
+            if norm(point - Ball_Array(i).Location.Coord) <=  mr
                 ball = Ball_Array(i);
                 return;
             end
