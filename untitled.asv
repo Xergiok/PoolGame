@@ -1,0 +1,25 @@
+clear all; clc; close all;
+
+% axis([0 5 0 5]);
+% a = 0;
+% h = text(2.5,2.5,'Rotated text','rotation',a);
+% while true
+%   a = a + 1;
+%   set(h, 'Rotation',a)
+%   drawnow();
+% end
+
+a = [0, 3]
+c = [1, 1]
+b = [1, 1]
+
+n1 = all(a > b
+n2 = all(a < b
+
+n3 = all(a - c > b)
+n3 = all(a - c < b)
+
+
+
+
+

@@ -1,0 +1,17 @@
+classdef (Abstract) FlatActor < FlatObject & TransformComponent  & MovementComponent
+
+%% Class public methods block
+methods(Access = public)
+
+    % class constructor method
+    function this = FlatActor(fig, location)
+
+        this = this@TransformComponent(location);   % trans
+        this = this@FlatObject(fig);
+
+    end
+
+end
+
+end
+

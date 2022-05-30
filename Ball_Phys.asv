@@ -1,0 +1,54 @@
+classdef Ball_Phys < handle
+
+%% Class public properties block
+properties
+    Mass(1, 1) {mustBeNumeric, mustBePositive, mustBeFinite, mustBeReal} = ...
+        160; % weight in grams
+    Radius(1, 1) {mustBeNumeric, mustBePositive, mustBeFinite, mustBeReal} = ...
+        2.85;  % radius in centimeters
+end
+
+%% Class constant properties block
+properties(Constant)
+    UnitMultiplier = struct('Mass', 0.001 , 'Radius', 0.01);
+end
+
+%% Class public methods block
+methods
+
+    % class constructor method
+    function this = Ball_Phys(params)
+
+        arguments
+%             params.Mass {mustBeNumeric, mustBeFinite, mustBePositive, mustBeReal};
+%             params.Radius {mustBeNumeric, mustBeFinite, mustBePositive, mustBeReal};
+        end
+
+        if isfield(params, 'Mass')
+            value = params.Mass;
+            if isnumeric(value) 
+            end
+            this.Mass = params.Mass;
+        end
+
+        if isfield(params, 'Radius')
+            this.Radius = params.Radius;
+        end
+
+    end
+
+    function cellst = Convert2Cell(this)
+
+        objst = struct(this);
+        objst = rmfield(objst, 'UnitMultiplier');
+        cellst = [fieldnames(objst).'; struct2cell(objst).'];
+
+    end
+
+end
+
+methods(Static)
+end
+
+end
+

@@ -1,0 +1,14 @@
+classdef GlobalConstants
+
+%% Class constant properties block
+properties(Constant)
+
+    g = 980.665;    % value for the acceleration of gravity in cm/(s^2)
+    coef_mu = 1;    % coefficient of friction
+    coef_kp = 1;    % constants of elasticity
+    coef_kv = 1;    %
+
+end
+
+end
+
