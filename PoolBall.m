@@ -176,7 +176,7 @@ methods(Access = protected)
             if this.Speed > 0   % only for moving
                 % FrictionForce = - FrictionCoef *g * VelocityUnitVector
                 output = -GlobalConstants.SlidingFriction * GlobalConstants.g * this.GetUnitVelocity;
-                coef = max(0, this.Speed/this.Threshold_Max);
+                coef = max(GlobalConstants.minSlidingScale, this.Speed/this.Threshold_Max);
                 output = output*coef;
             end
             
@@ -189,7 +189,7 @@ methods(Access = protected)
             if this.Speed > 0   % only for moving
                 % FrictionForce = - FrictionCoef / R * g * VelocityUnitVector
                 output = -GlobalConstants.RollingFriction / this.Radius * GlobalConstants.g * this.GetUnitVelocity;
-                coef = 1 - min(0.7, this.Speed/this.Threshold_Max);
+                coef = 1 - min(GlobalConstants.maxRollingScale, this.Speed/this.Threshold_Max);
                 output = output*coef;
             end
 

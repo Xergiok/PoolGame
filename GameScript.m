@@ -22,7 +22,7 @@ Input = Controller(f);
 
 pool_table = Borders(f);
 
-pocket_pos = [150 70; 0 70; -150 70; -150 -70; 0 -70; 150 -70]
+pocket_pos = [150 70; 0 70; -150 70; -150 -70; 0 -70; 150 -70];
 
 for i = 1:size(pocket_pos, 1)
     Pockets(i) = Pocket(f, pocket_pos(i, :));
@@ -38,8 +38,8 @@ Ball_Array(2) = PoolBall(f, vector2d(-100, 0), PhysParams(2));
 Ball_Array(1).AddVelocity([-100 1]);
 Ball_Array(2).AddVelocity([-36 -433]);
 
-Num = size(Ball_Array, 2);
-MotionTracker = Ball_Array.bMoving;
+InitialNum = size(Ball_Array, 2);
+Num = InitialNum;
 
 time_step = GlobalConstants.TimeStep;
 
@@ -59,24 +59,28 @@ State.Start;
 while State.bRunning
 
     tic;    % start timer
-    interaction = zeros(Num);   % ball interaction matrix
 
     if any(isvalid(Ball_Array))
+        if IsAnyMoving
+            for i = 1:Num
+                i
+                Ball_Array(i).UpdateObject(time_step, pool_table, Ball_Array(Ball_Array ~= Ball_Array(i)));
 
-        for i = 1:Num
-            Ball_Array(i).UpdateObject(time_step, pool_table, Ball_Array(Ball_Array ~= Ball_Array(i)));
-
-            for j = 1:6
-                potted = Pockets(j).CheckPocket(Ball_Array(i).Location.Coord);
-                if potted
-                    if Controlled == Ball_Array(i)
-                        Controlled = [];
+                for j = 1:6
+                    potted = Pockets(j).CheckPocket(Ball_Array(i).Location.Coord);
+                    if potted
+                        if Controlled == Ball_Array(i)
+                            Controlled = [];
+                        end
+                        delete(Ball_Array(i));
+                        Ball_Array(i) = [];
+                        Num = Num - 1;
+                        i = max(i - 1, 1);
+                        last_i = i
+                        continue;
                     end
-                    delete(Ball_Array(i));
-                    Ball_Array(i) = [];
-                    Num = Num - 1;
-                    break;
                 end
+
             end
         end
     end
